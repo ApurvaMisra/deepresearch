@@ -13,31 +13,51 @@ class Search {
 class Think {
   action "think" @description("Signal the need to consult the supervisor with the given query and context before proceeding. Context is the conversation history till now")
   query string // The user's original query or the specific topic for supervisor review
-  context string // The conversation history and relevant data for the supervisor
+  context Message[] // The conversation history and relevant data for the supervisor
 }
 
 function Chat(state: Message[]) -> Search | Think | Reply {
   client "openai/gpt-4o-mini-2024-07-18"
   prompt #"
-    You are an assistant that is helping the user get the best result for their query using the Search action 
-    for web search, think action to call your supervisor for review and reply action to reply to the user. The reply action should only be called if the supervisor thinks the research is complete.
+    You are an assistant helping a user with their query. Your goal is to provide the best possible answer by using the tools available to you.
 
-    {{ ctx.output_format }}
+    Your tools are:
+    - `search_web`: To search the web for information.
+    - `think`: To consult your supervisor for guidance when you are unsure how to proceed.
+    - `reply_to_user`: To give the final answer to the user.
+
+    **Conversation Flow:**
+    1.  Start by using the `search_web` tool to gather initial information.
+    2.  After the search, use the `think` tool to present the findings to your supervisor.
+    3.  Your supervisor will provide feedback and instructions. **You MUST follow the supervisor's instructions.**
+    4.  If the supervisor tells you to do more research, use the `search_web` tool again with a refined query based on their feedback.
+    5.  If the supervisor says the research is complete, use the `reply_to_user` tool to provide the final answer.
+
+    **Output Format:**
+    Your output MUST be a single, flat JSON object, without any nesting. Do NOT add any explanations outside of the JSON.
     
+    Here is the conversation history:
     {% for m in state %}
     {{ _.role(m.role) }}
     {{ m.content }}
     {% endfor %}
+
+    {{ ctx.output_format }}
   "#
 }
 
-function Thinking(query: string, context: string) -> Message {
+function Thinking(query: string, context: Message[]) -> Message {
   client "openai/gpt-4.1"
   prompt #"
     You are a supervisor to an assistant that is helping a user with their query: {{query}}
     You have the following context (the conversation between the assistant, user, and potentially you):
     {{context}}
-    Your role is to guide the assistant. Instruct them if they need to do more research (and what to look for), or if they should reply to the user with the information gathered so far.
+    
+    Your role is to guide the assistant.
+    - If the assistant has gathered enough information, help it synthesize the findings and instruct it to reply to the user.
+    - If the research is incomplete, provide a summarized analysis of the gathered information and instruct the assistant on what specific details to search for next.
+    - If the assistant seems stuck, proactively help it by summarizing the current state and suggesting a clear, actionable next step.
+
     Format your response as a 'Message' object with your role as 'supervisor'.
 
     {{ ctx.output_format }}

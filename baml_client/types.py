@@ -61,4 +61,4 @@ class Search(BaseModel):
 class Think(BaseModel):
     action: Literal["think"]
     query: str
-    context: str
+    context: List["Message"]

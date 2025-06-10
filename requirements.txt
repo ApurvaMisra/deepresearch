@@ -1,0 +1,4 @@
+baml
+requests
+python-dotenv
+streamlit 

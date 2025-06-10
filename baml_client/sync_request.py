@@ -85,7 +85,7 @@ class HttpRequest:
     
     def Thinking(
         self,
-        query: str,context: str,
+        query: str,context: List[types.Message],
         baml_options: BamlCallOptions = {},
     ) -> baml_py.HTTPRequest:
       __tb__ = baml_options.get("tb", None)
@@ -165,7 +165,7 @@ class HttpStreamRequest:
     
     def Thinking(
         self,
-        query: str,context: str,
+        query: str,context: List[types.Message],
         baml_options: BamlCallOptions = {},
     ) -> baml_py.HTTPRequest:
       __tb__ = baml_options.get("tb", None)

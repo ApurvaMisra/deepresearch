@@ -56,4 +56,4 @@ class Search(BaseModel):
 class Think(BaseModel):
     action: Optional[Literal["think"]] = None
     query: Optional[str] = None
-    context: Optional[str] = None
+    context: List["Message"]

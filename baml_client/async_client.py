@@ -156,7 +156,7 @@ class BamlAsyncClient:
     
     async def Thinking(
         self,
-        query: str,context: str,
+        query: str,context: List[types.Message],
         baml_options: BamlCallOptions = {},
     ) -> types.Message:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
@@ -261,7 +261,7 @@ class BamlStreamClient:
     
     def Thinking(
         self,
-        query: str,context: str,
+        query: str,context: List[types.Message],
         baml_options: BamlCallOptions = {},
     ) -> baml_py.BamlStream[partial_types.Message, types.Message]:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
